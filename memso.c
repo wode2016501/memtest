@@ -79,7 +79,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    int mem_fd = open(mem_path, O_RDWR);
+    int mem_fd = open("/dev/mem", O_RDWR);
+    if (mem_fd < 0)
+        mem_fd = open(mem_path, O_RDWR);
     if (mem_fd == -1)
     {
         perror("打开 mem 失败");
@@ -117,7 +119,7 @@ int main(int argc, char *argv[])
         printf("扫描区域: %s", line);
         unsigned long addr = start;
 
-        while (addr < end-sizeof(long) && running)
+        while (addr < end - sizeof(long) && running)
         {
             size_t chunk = (end - addr) < CHUNK_SIZE ? (end - addr) : CHUNK_SIZE;
 
@@ -144,8 +146,8 @@ int main(int argc, char *argv[])
                 if (*p == ip /*target*/)
                 {
                     unsigned long hit_addr = addr + offset;
-                    //printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
-                    //printf("int 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
+                    // printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
+                    // printf("int 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
                     if (intcount >= MAX_CHUNKS)
                     {
                         printf("intaddr 数组已满，无法存储更多地址。\n");
@@ -157,8 +159,8 @@ int main(int argc, char *argv[])
                 if (*p1 == ip)
                 {
                     unsigned long hit_addr = addr + offset;
-                    //printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
-                    //printf("float 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
+                    // printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
+                    // printf("float 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
                     if (floatcount >= MAX_CHUNKS)
                     {
                         printf("floataddr 数组已满，无法存储更多地址。\n");
@@ -172,8 +174,8 @@ int main(int argc, char *argv[])
                     if (*p2 == ip)
                     {
                         unsigned long hit_addr = addr + offset;
-                        //printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
-                        //printf("double 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
+                        // printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
+                        // printf("double 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
                         if (doublecount >= MAX_CHUNKS)
                         {
                             printf("doubleaddr 数组已满，无法存储更多地址。\n");
@@ -185,8 +187,8 @@ int main(int argc, char *argv[])
                     if (*p3 == ip)
                     {
                         unsigned long hit_addr = addr + offset;
-                        //printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
-                       // printf("long 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
+                        // printf("扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
+                        // printf("long 找到目标值 %d 于地址 0x%lx\n", ip, hit_addr);
                         if (longcount >= MAX_CHUNKS)
                         {
                             printf("longaddr 数组已满，无法存储更多地址。\n");
@@ -243,7 +245,7 @@ int main(int argc, char *argv[])
             }
         }
         new_value = 0;
-        if (w == 'w'||w=='q')
+        if (w == 'w' || w == 'q')
         {
             printf("请输入要修改的行号和新值 (格式: 行号)，或按 Ctrl+D 退出:\n");
             ret = read(0, &line, sizeof(line));
@@ -256,7 +258,7 @@ int main(int argc, char *argv[])
                 printf("行号超出范围，请重新输入。\n");
                 continue;
             }
-            if (n > 0||w=='q')
+            if (n > 0 || w == 'q')
             {
                 printf("请输入新值 (整数):\n");
                 ret = read(0, &line, sizeof(line));
@@ -281,7 +283,7 @@ int main(int argc, char *argv[])
                 i--;
                 continue;
             }
-            if ((n == count||w=='q') && new_value > 0)
+            if ((n == count || w == 'q') && new_value > 0)
             {
                 setdata(mem_fd, intaddr[i], &new_value, sizeof(new_value));
             }
@@ -300,7 +302,7 @@ int main(int argc, char *argv[])
                 i--;
                 continue;
             }
-            if ((n == count||w=='q') && new_value > 0)
+            if ((n == count || w == 'q') && new_value > 0)
             {
                 fvalue = (float)new_value;
                 setdata(mem_fd, floataddr[i], &fvalue, sizeof(fvalue));
@@ -320,7 +322,7 @@ int main(int argc, char *argv[])
                 i--;
                 continue;
             }
-            if ((n == count||w=='q') && new_value > 0)
+            if ((n == count || w == 'q') && new_value > 0)
             {
                 dvalue = (double)new_value;
                 setdata(mem_fd, doubleaddr[i], &dvalue, sizeof(dvalue));
@@ -340,7 +342,7 @@ int main(int argc, char *argv[])
                 i--;
                 continue;
             }
-            if ((n == count||w=='q') && new_value > 0)
+            if ((n == count || w == 'q') && new_value > 0)
             {
                 lvalue = (long)new_value;
                 setdata(mem_fd, longaddr[i], &lvalue, sizeof(lvalue));
