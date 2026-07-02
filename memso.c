@@ -79,9 +79,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    int mem_fd = open("/dev/mem", O_RDWR);
-    if (mem_fd < 0)
-        mem_fd = open(mem_path, O_RDWR);
+
+    int    mem_fd = open(mem_path, O_RDWR);
     if (mem_fd == -1)
     {
         perror("打开 mem 失败");
