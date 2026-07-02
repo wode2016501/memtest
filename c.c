@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "用法: %s <目标进程PID>\n", argv[0]);
         return 1;
     }
-
+    int ip=inet_addr("192.168.100.254");
     pid_t pid = atoi(argv[1]);
     char maps_path[64];
     snprintf(maps_path, sizeof(maps_path), "/proc/%d/maps", pid);
@@ -69,6 +69,9 @@ int main(int argc, char *argv[]) {
             // 在缓冲区中搜索 int 类型的目标值
             for (size_t offset = 0; offset <= (size_t)bytes - sizeof(int); offset++) {
                 int *p = (int*)(buffer + offset);
+		float *p1=(float *) (buffer + offset);
+		double *p2=(double *) (buffer + offset);
+
                 if (*p == target) {
                     unsigned long hit_addr = addr + offset;
                     printf("找到目标值 %d 于地址 0x%lx\n", target, hit_addr);
