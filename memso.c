@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            addr += chunk - sizeof(long); // 确保不会错过跨块的值
+            addr += bytes - sizeof(long); // 确保不会错过跨块的值
         }
     }
     free(buffer);

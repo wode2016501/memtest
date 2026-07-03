@@ -170,9 +170,13 @@ int main(int argc, char *argv[])
 
     char line[1024];
     unsigned long *longaddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
+    unsigned long *vlongaddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
     unsigned long *intaddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
+    unsigned long *vintaddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
     unsigned long *floataddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
+    unsigned long *vfloataddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
     unsigned long *doubleaddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
+    unsigned long *vdoubleaddr = malloc(MAX_CHUNKS * sizeof(unsigned long));
     int doublecount = 0;
     int floatcount = 0;
     int intcount = 0;
@@ -201,7 +205,7 @@ int main(int argc, char *argv[])
         // 只关心可写区域 (权限中包含 'w')
         if (!strchr(perms, 'w'))
             continue;
-        if (strchr(line, '/'))// 过滤掉文件映射区域，只保留匿名映射
+        if (strchr(line, '/')) // 过滤掉文件映射区域，只保留匿名映射
             continue;
 
         // printf("8扫描区域: 0x%lx-0x%lx (%s)  %ld\n", start, end, perms, end - start);
@@ -261,10 +265,14 @@ int main(int argc, char *argv[])
                     }
                     phy_end_addr = 0;
                 }
-                int phy_size = 1;
+                int phy_size = 0;
                 if (phy_end_addr != 0)
                 {
                     phy_size = phy_end_addr - phy_addr;
+                }
+                if (phy_size <= 4){
+                    printf("phy_size: %d", phy_size);
+                    continue;
                 }
                 addr = phy_addr;
                 // 在缓冲区中搜索 int 类型的目标值
@@ -293,6 +301,7 @@ int main(int argc, char *argv[])
                             continue;
                         }
                         intaddr[intcount] = hit_addr;
+                        vintaddr[intcount] = start + i + offset;
                         intcount++;
                         count++;
                     }
@@ -306,6 +315,7 @@ int main(int argc, char *argv[])
                             continue;
                         }
                         floataddr[floatcount] = hit_addr;
+                        vfloataddr[floatcount] = start + i + offset;   
                         floatcount++;
                         count++;
                     }
@@ -322,6 +332,7 @@ int main(int argc, char *argv[])
                                 continue;
                             }
                             doubleaddr[doublecount] = hit_addr;
+                            vdoubleaddr[doublecount] = start + i + offset;
                             doublecount++;
                             count++;
                         }
@@ -336,6 +347,7 @@ int main(int argc, char *argv[])
                                 continue;
                             }
                             longaddr[longcount] = hit_addr;
+                            vlongaddr[longcount] = start + i + offset;
                             longcount++;
                             count++;
                         }
@@ -421,10 +433,11 @@ int main(int argc, char *argv[])
         {
             count++;
             getdata(mem_fd, intaddr[i], &ivalue, sizeof(ivalue));
-            printf("line:%d int 原值: %d 0x%lx \n", count, ivalue, intaddr[i]);
+            printf("line:%d int 原值: %d 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, ivalue, intaddr[i], vintaddr[i]);
             if (w == 'n' && ip != ivalue)
             {
                 memcpy(intaddr + i, intaddr + i + 1, (intcount - i - 1) * sizeof(unsigned long));
+                memcpy(vintaddr + i, vintaddr + i + 1, (intcount - i - 1) * sizeof(unsigned long));
                 intcount--;
                 printf("line:%d int 原值: %d != %d\n", count, ivalue, ip);
                 count--;
@@ -440,10 +453,11 @@ int main(int argc, char *argv[])
         {
             count++;
             getdata(mem_fd, floataddr[i], &fvalue, sizeof(fvalue));
-            printf("line:%d float 原值: %f 0x%lx\n", count, fvalue, floataddr[i]);
+            printf("line:%d float 原值: %f 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, fvalue, floataddr[i], vfloataddr[i]);
             if (w == 'n' && ip != fvalue)
             {
                 memcpy(floataddr + i, floataddr + i + 1, (floatcount - i - 1) * sizeof(unsigned long));
+                memcpy(vfloataddr + i, vfloataddr + i + 1, (floatcount - i - 1) * sizeof(unsigned long));
                 floatcount--;
                 printf("line:%d float 原值: %f != %d, 跳过修改\n", count, fvalue, ip);
                 count--;
@@ -460,10 +474,11 @@ int main(int argc, char *argv[])
         {
             count++;
             getdata(mem_fd, doubleaddr[i], &dvalue, sizeof(dvalue));
-            printf("line:%d double 原值: %lf 0x%lx\n", count, dvalue, doubleaddr[i]);
+            printf("line:%d double 原值: %lf 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, dvalue, doubleaddr[i], vdoubleaddr[i]);
             if (w == 'n' && ip != dvalue)
             {
                 memcpy(doubleaddr + i, doubleaddr + i + 1, (doublecount - i - 1) * sizeof(unsigned long));
+                memcpy(vdoubleaddr + i, vdoubleaddr + i + 1, (doublecount - i - 1) * sizeof(unsigned long));
                 doublecount--;
                 printf("line:%d double 原值: %lf != %d, 跳过修改\n", count, dvalue, ip);
                 count--;
@@ -480,10 +495,11 @@ int main(int argc, char *argv[])
         {
             count++;
             getdata(mem_fd, longaddr[i], &lvalue, sizeof(lvalue));
-            printf("line:%d long 原值: %ld 0x%lx\n", count, lvalue, longaddr[i]);
+            printf("line:%d long 原值: %ld 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, lvalue, longaddr[i], vlongaddr[i]);
             if (w == 'n' && ip != lvalue)
             {
                 memcpy(longaddr + i, longaddr + i + 1, (longcount - i - 1) * sizeof(unsigned long));
+                memcpy(vlongaddr + i, vlongaddr + i + 1, (longcount - i - 1) * sizeof(unsigned long));
                 longcount--;
                 printf("line:%d long 原值: %ld != %d, 跳过修改\n", count, lvalue, ip);
                 count--;
