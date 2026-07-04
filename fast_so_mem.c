@@ -170,6 +170,7 @@ void *print_addr(long value){
             break;
         }
         w = *line;
+        
         if (w == 'n')
         {
             printf("请输入搜索值 (整数):\n");
@@ -187,11 +188,11 @@ void *print_addr(long value){
             }
         }
         new_value = 0;
-        if (w == 'w' || w == 'q')
+        if (w == 'w' || w == 'q'|| w == 'd')
         {
-            if (w == 'w')
+            if (w == 'w'|| w == 'd')
             {
-                printf("请输入要修改的行号和新值 (格式: 行号)，或按 Ctrl+D 退出:\n");
+                printf("请输入要修改的行号:\n");
                 ret = read(0, &line, sizeof(line));
                 if (ret <= 0)
                     break;
@@ -203,7 +204,7 @@ void *print_addr(long value){
                     continue;
                 }
             }
-            if (n > 0 || w == 'q')
+            if ((w=='w'&&n > 0) || w == 'q')
             {
                 printf("请输入新值 (整数):\n");
                 ret = read(0, &line, sizeof(line));
@@ -219,12 +220,12 @@ void *print_addr(long value){
             count++;
             getdata(mem_fd, intaddr[i], &ivalue, sizeof(ivalue));
             printf("line:%d int 原值: %d 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, ivalue, intaddr[i], vintaddr[i]);
-            if (w == 'n' && ip != ivalue)
+            if ((w == 'n' && ip != ivalue)||(n == count&& w=='d' ))
             {
                 memcpy(intaddr + i, intaddr + i + 1, (intcount - i - 1) * sizeof(unsigned long));
                 memcpy(vintaddr + i, vintaddr + i + 1, (intcount - i - 1) * sizeof(unsigned long));
                 intcount--;
-                printf("line:%d int 原值: %d != %d\n", count, ivalue, ip);
+                printf("删除：line:%d int 原值: %d != %d\n", count, ivalue, ip);
                 count--;
                 i--;
                 continue;
@@ -239,12 +240,12 @@ void *print_addr(long value){
             count++;
             getdata(mem_fd, floataddr[i], &fvalue, sizeof(fvalue));
             printf("line:%d float 原值: %f 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, fvalue, floataddr[i], vfloataddr[i]);
-            if (w == 'n' && ip != fvalue)
+            if ((w == 'n' && ip != fvalue)||(n == count&&w=='d'))
             {
                 memcpy(floataddr + i, floataddr + i + 1, (floatcount - i - 1) * sizeof(unsigned long));
                 memcpy(vfloataddr + i, vfloataddr + i + 1, (floatcount - i - 1) * sizeof(unsigned long));
                 floatcount--;
-                printf("line:%d float 原值: %f != %d, 跳过修改\n", count, fvalue, ip);
+                printf("删除：line:%d float 原值: %f != %d\n", count, fvalue, ip);
                 count--;
                 i--;
                 continue;
@@ -260,12 +261,12 @@ void *print_addr(long value){
             count++;
             getdata(mem_fd, doubleaddr[i], &dvalue, sizeof(dvalue));
             printf("line:%d double 原值: %lf 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, dvalue, doubleaddr[i], vdoubleaddr[i]);
-            if (w == 'n' && ip != dvalue)
+            if ((w == 'n' &&ip != dvalue)||(n == count&&w=='d'))
             {
                 memcpy(doubleaddr + i, doubleaddr + i + 1, (doublecount - i - 1) * sizeof(unsigned long));
                 memcpy(vdoubleaddr + i, vdoubleaddr + i + 1, (doublecount - i - 1) * sizeof(unsigned long));
                 doublecount--;
-                printf("line:%d double 原值: %lf != %d, 跳过修改\n", count, dvalue, ip);
+                printf("删除： line:%d double 原值: %lf != %d\n", count, dvalue, ip);
                 count--;
                 i--;
                 continue;
@@ -281,12 +282,12 @@ void *print_addr(long value){
             count++;
             getdata(mem_fd, longaddr[i], &lvalue, sizeof(lvalue));
             printf("line:%d long 原值: %ld 物理地址: 0x%lx 虚拟地址: 0x%lx\n", count, lvalue, longaddr[i], vlongaddr[i]);
-            if (w == 'n' && ip != lvalue)
+            if ((w == 'n' && ip != lvalue)||(n == count&&w=='d'))
             {
                 memcpy(longaddr + i, longaddr + i + 1, (longcount - i - 1) * sizeof(unsigned long));
                 memcpy(vlongaddr + i, vlongaddr + i + 1, (longcount - i - 1) * sizeof(unsigned long));
                 longcount--;
-                printf("line:%d long 原值: %ld != %d, 跳过修改\n", count, lvalue, ip);
+                printf("删除： line:%d long 原值: %ld != %d\n", count, lvalue, ip);
                 count--;
                 i--;
                 continue;
